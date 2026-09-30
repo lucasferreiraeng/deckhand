@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type KeyboardEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react'
 import type { Route } from '../App'
 import type { CardRow } from '../progress'
 import { isMuted, setMuted } from '../lib/sound'
@@ -39,7 +39,7 @@ export function Home({ go }: { go: (r: Route) => void }) {
             <i />
             <i />
           </span>
-          deckhand
+          <span className="brand-name">deckhand</span>
         </div>
         <div className="topbar-stats">
           <span className="stat stat-streak" title="Days in a row with at least one answer">
@@ -80,6 +80,16 @@ function storedSubject() {
 }
 
 function SubjectTabs({ current, onPick }: { current: string; onPick: (id: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  // On phones the tabs scroll sideways; keep the selected one in view.
+  useEffect(() => {
+    const tab = ref.current?.querySelector<HTMLElement>('[aria-selected="true"]')
+    const strip = ref.current
+    if (!tab || !strip) return
+    strip.scrollTo({ left: tab.offsetLeft - (strip.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' })
+  }, [current])
+
   // Arrow keys move between tabs, as the ARIA tabs pattern expects.
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
@@ -92,7 +102,7 @@ function SubjectTabs({ current, onPick }: { current: string; onPick: (id: string
   }
 
   return (
-    <div className="subject-tabs" role="tablist" aria-label="Subjects" onKeyDown={onKeyDown}>
+    <div ref={ref} className="subject-tabs" role="tablist" aria-label="Subjects" onKeyDown={onKeyDown}>
       {subjects.map((s) => (
         <SubjectTab key={s.id} subject={s} selected={s.id === current} onPick={() => onPick(s.id)} />
       ))}

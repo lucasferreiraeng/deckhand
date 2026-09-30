@@ -347,12 +347,14 @@ button:disabled {
 
 /* Subject picker: one tab per subject, the selected one lifts onto paper. */
 .subject-tabs {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 20px;
 }
 .subject-tab {
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -414,7 +416,8 @@ button:disabled {
 /* The decks: stacks of cards with a coloured face. */
 .decks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* Always four decks (three levels + tips), so step 4 → 2 → 1 and never leave one alone on a row. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 28px 24px;
 }
 
@@ -428,8 +431,10 @@ button:disabled {
   border: 0;
   background: none;
   text-align: left;
+  min-width: 0;
   min-height: 300px;
   isolation: isolate;
+  container-type: inline-size;
 }
 .deck[data-level='beginner'] {
   --face: var(--mint);
@@ -505,7 +510,7 @@ button:disabled {
   margin: -4px 0 18px;
   font-family: var(--mono);
   font-weight: 800;
-  font-size: clamp(2.2rem, 2.9vw, 3.4rem);
+  font-size: clamp(1.8rem, 14cqi, 3.4rem);
   line-height: 1;
   letter-spacing: -0.04em;
   white-space: nowrap;
@@ -519,7 +524,7 @@ button:disabled {
 
 .deck-name {
   font-family: var(--display);
-  font-size: 1.4rem;
+  font-size: clamp(1.15rem, 7.5cqi, 1.4rem);
   line-height: 1.1;
 }
 .deck-blurb {
@@ -1093,7 +1098,7 @@ button:disabled {
 
 .results-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   margin: 26px 0 0;
 }
@@ -1402,6 +1407,12 @@ button:disabled {
 
 /* ---------- Small screens ---------- */
 
+@media (max-width: 1180px) {
+  .decks {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 720px) {
   .hero {
     flex-direction: column;
@@ -1417,8 +1428,23 @@ button:disabled {
   .shelf-head .btn {
     width: 100%;
   }
+  /* Tabs become a strip that scrolls sideways, bleeding to the screen edge. */
+  .subject-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-inline: calc(-1 * var(--gutter));
+    padding: 6px var(--gutter) 12px;
+    scroll-padding-inline: var(--gutter);
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+  .subject-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .subject-tab {
+    scroll-snap-align: start;
+  }
   .decks {
-    grid-template-columns: 1fr 1fr;
     gap: 22px 16px;
   }
   .deck,
@@ -1427,12 +1453,6 @@ button:disabled {
   }
   .deck-face {
     padding: 18px 16px 16px;
-  }
-  .deck-glyph {
-    font-size: 1.9rem;
-  }
-  .deck-blurb {
-    display: none;
   }
   .activity-bars {
     height: 40px;
@@ -1479,15 +1499,86 @@ button:disabled {
   }
 }
 
+/* Phones: one deck per row, laid out shorter since the width is there. */
+@media (max-width: 560px) {
+  .decks {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .deck,
+  .deck-face {
+    min-height: 0;
+  }
+  .deck-glyph {
+    margin-bottom: 12px;
+    font-size: clamp(1.8rem, 11cqi, 2.4rem);
+  }
+  .deck-glyph svg {
+    width: 38px;
+    height: 38px;
+  }
+  .deck-name {
+    font-size: 1.3rem;
+  }
+  .deck[data-level='tips'] .deck-meta {
+    margin-top: 16px;
+  }
+  .deck:hover:not(:disabled) .deck-face {
+    transform: translateY(-4px);
+  }
+  .results-stats > div {
+    padding: 10px;
+  }
+  .tip-card {
+    padding: 22px 18px 24px;
+  }
+}
+
 @media (max-width: 420px) {
+  .topbar {
+    gap: 8px;
+    padding: 16px 0;
+  }
   .brand {
+    gap: 10px;
     font-size: 1.2rem;
+  }
+  .brand-mark {
+    width: 24px;
+    height: 28px;
   }
   .topbar-stats {
     gap: 4px;
   }
   .stat {
+    gap: 4px;
     padding: 6px 10px 6px 8px;
+  }
+  .stat svg {
+    width: 18px;
+    height: 18px;
+  }
+  .stat b {
+    font-size: 0.95rem;
+  }
+  .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .results-card {
+    padding: 22px 16px 20px;
+  }
+}
+
+/* Narrowest phones: the card mark alone carries the brand. */
+@media (max-width: 360px) {
+  .brand-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 
@@ -1500,7 +1591,7 @@ button:disabled {
 }
 .gallery section {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(520px, 100%), 1fr));
   gap: 24px;
   align-items: start;
 }
