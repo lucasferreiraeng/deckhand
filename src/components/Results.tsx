@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { XP_PER_CORRECT } from '../progress'
 import type { Question } from '../types'
 import { Bolt, Check, Close, Flame } from './Icons'
+import { OptionText } from './Specimen'
 import { RichText } from './Text'
 
 export interface Outcome {
@@ -87,7 +88,7 @@ export function Results({ outcomes, bestCombo, seconds, title, accent, onAgain, 
                         <RichText text={q.prompt} />
                       </p>
                       <p className="miss-a">
-                        <RichText text={q.options[q.answer]} />
+                        <OptionText option={q.options[q.answer]} />
                       </p>
                     </div>
                   </li>

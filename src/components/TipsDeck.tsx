@@ -5,6 +5,7 @@ import { useTipsSeen } from '../lib/stats'
 import { getSubject } from '../subjects'
 import { Arrow, Close, Shuffle } from './Icons'
 import { TIP_KIND_LABEL } from './labels'
+import { Specimen } from './Specimen'
 import { Code, RichText } from './Text'
 
 export function TipsDeck({ subjectId, onExit }: { subjectId: string; onExit: () => void }) {
@@ -97,6 +98,7 @@ export function TipsDeck({ subjectId, onExit }: { subjectId: string; onExit: () 
             <RichText text={tip.body} />
           </p>
           {tip.code && <Code code={tip.code} lang={subject.codeLanguage} />}
+          {tip.visual != null && <Specimen>{tip.visual}</Specimen>}
           </article>
         </div>
       </main>

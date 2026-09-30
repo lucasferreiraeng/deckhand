@@ -8,6 +8,7 @@ import { getSubject } from '../subjects'
 import type { LevelId, Question } from '../types'
 import { Check, Close, Flame } from './Icons'
 import { Results, type Outcome } from './Results'
+import { OptionText, Specimen } from './Specimen'
 import { Code, RichText } from './Text'
 
 interface Item {
@@ -162,7 +163,8 @@ export function Session({ subjectId, levelId, onExit, go }: Props) {
 
   const progress = (index + (checked ? 1 : 0)) / queue.length
   const { question, options, answer } = item.dealt
-  const codeHeavy = options.some((o) => o.length > 42)
+  const pictures = options.some((o) => typeof o !== 'string')
+  const codeHeavy = options.some((o) => typeof o === 'string' && o.length > 42)
 
   return (
     <div className="page session" data-accent={accent}>
@@ -197,9 +199,16 @@ export function Session({ subjectId, levelId, onExit, go }: Props) {
             <RichText text={question.prompt} />
           </h1>
           {question.code && <Code code={question.code} lang={subject.codeLanguage} />}
+          {question.visual != null && <Specimen>{question.visual}</Specimen>}
         </article>
 
-        <div className="options" data-wide={codeHeavy || undefined} role="group" aria-label="Answers">
+        <div
+          className="options"
+          data-wide={codeHeavy || undefined}
+          data-pictures={pictures || undefined}
+          role="group"
+          aria-label="Answers"
+        >
           {options.map((opt, i) => {
             const state = !checked ? undefined : i === answer ? 'correct' : i === selected ? 'wrong' : 'dim'
             return (
@@ -210,11 +219,23 @@ export function Session({ subjectId, levelId, onExit, go }: Props) {
                 disabled={checked}
                 onClick={() => check(i)}
                 style={{ '--i': i } as CSSProperties}
+                aria-label={typeof opt === 'string' ? undefined : opt.label}
               >
                 <kbd className="option-key">{LETTERS[i]}</kbd>
-                <span className="option-text">
-                  <RichText text={opt} />
-                </span>
+                {typeof opt === 'string' ? (
+                  <span className="option-text">
+                    <RichText text={opt} />
+                  </span>
+                ) : (
+                  <>
+                    <Specimen small>{opt.visual}</Specimen>
+                    {checked && (
+                      <span className="option-caption">
+                        <RichText text={opt.label} />
+                      </span>
+                    )}
+                  </>
+                )}
               </button>
             )
           })}
@@ -237,7 +258,7 @@ export function Session({ subjectId, levelId, onExit, go }: Props) {
                 <h2>{isCorrect ? praise : selected == null ? 'Here’s the answer.' : 'Not quite.'}</h2>
                 {!isCorrect && (
                   <p className="feedback-answer">
-                    <RichText text={options[answer]} />
+                    <OptionText option={options[answer]} />
                   </p>
                 )}
                 <p className="feedback-why">

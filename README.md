@@ -1,6 +1,6 @@
 # Deckhand
 
-Duolingo-style flash cards for learning programming topics. Multiple choice, three levels per subject, plus a deck of tips and curiosities.
+Duolingo-style flash cards for learning programming topics (TypeScript, Git and UX so far). Multiple choice, three levels per subject, plus a deck of tips and curiosities.
 
 ```sh
 npm install
@@ -36,3 +36,13 @@ Writing cards:
 - Ids must be unique across all subjects and never change, because progress is saved against them. Prefix them, e.g. `rs-b-01`.
 - Options are shuffled when shown, so avoid "all of the above".
 - Wrap code in backticks inside any text field and it renders as inline code. Use `code` for multi-line snippets.
+- Set `codeLanguage: 'shell'` on the subject to highlight snippets as shell commands instead of TypeScript.
+
+### Pictures instead of code
+
+Question and tip files can be `.tsx` and show mock screens, like the UX subject does:
+
+- `visual` on a question or tip draws a mock under the text.
+- An option can be `{ visual, label }` instead of a string. The four pictures show as tiles, and each label appears under its tile after you answer. Don't mix text and picture options in one question.
+- Build mocks from the kit in `src/components/mock/` (`import * as M from '../../components/mock'`): phone and browser frames, buttons, fields, lists, dialogs, toasts, and markup such as lettered pins and redline measurements. Use only kit components, not raw HTML, since a mock can sit inside an answer button.
+- While `npm run dev` is running, open `/?gallery=ux` (or any subject id) to see every card with its picture, options and answer on one page.

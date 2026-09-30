@@ -339,18 +339,61 @@ button:disabled {
   gap: 16px;
   margin-bottom: 28px;
 }
-.shelf-title {
+.shelf-tagline {
   flex: 1;
   min-width: 0;
+  color: rgb(255 255 255 / 0.66);
 }
-.shelf-title h2 {
+
+/* Subject picker: one tab per subject, the selected one lifts onto paper. */
+.subject-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.subject-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px 8px;
+  border: 2px solid rgb(255 255 255 / 0.12);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 0.06);
+  color: var(--paper);
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+.subject-tab:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+.subject-tab[aria-selected='true'] {
+  background: var(--paper);
+  border-color: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 5px 0 var(--paper-edge);
+  transform: translateY(-3px);
+}
+.subject-tab .subject-badge {
+  width: 44px;
+  height: 44px;
+  padding: 5px 6px;
+  font-size: 1rem;
+  border-radius: 10px;
+}
+.subject-tab-text {
+  display: grid;
+  gap: 2px;
+}
+.subject-tab-name {
   font-family: var(--display);
-  font-weight: 400;
-  font-size: 1.6rem;
+  font-size: 1.15rem;
   line-height: 1.1;
 }
-.shelf-title p {
-  color: rgb(255 255 255 / 0.66);
+.subject-tab-meta {
+  font-size: 0.82rem;
+  font-weight: 600;
+  opacity: 0.7;
 }
 
 .subject-badge {
@@ -846,6 +889,46 @@ button:disabled {
   background: rgb(20 26 77 / 0.12);
 }
 
+/* Answers that are pictures: tiles with the key in the corner and the label revealed after answering. */
+.options[data-pictures] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.options[data-pictures] .option {
+  position: relative;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding: 10px;
+}
+.options[data-pictures] .option-key {
+  /* Sits on the tile's corner so it never covers the picture. */
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  z-index: 2;
+  width: 28px;
+  height: 28px;
+  background: var(--night-lift);
+  color: var(--paper);
+  border-color: rgb(255 255 255 / 0.3);
+  opacity: 1;
+}
+.options[data-pictures] .option[data-state='correct'] .option-key {
+  background: var(--mint-edge);
+}
+.options[data-pictures] .option[data-state='wrong'] .option-key {
+  background: var(--flame-edge);
+}
+.options[data-pictures] .specimen {
+  flex: 1;
+}
+.option-caption {
+  padding: 0 4px 2px;
+  font-size: 0.88rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
 .session-foot {
   /* Sticky, not fixed: it keeps its own space in the flow, so a tall sheet never hides the options. */
   position: sticky;
@@ -1293,6 +1376,15 @@ button:disabled {
     min-height: 72px;
     font-size: 1.05rem;
   }
+  .options[data-pictures] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .qcard .specimen {
+    --mk-size: 14px;
+  }
+  .options[data-pictures] .specimen {
+    --mk-size: 11.5px;
+  }
 
   .results-body {
     display: grid;
@@ -1397,4 +1489,70 @@ button:disabled {
   .stat {
     padding: 6px 10px 6px 8px;
   }
+}
+
+/* ---------- Dev gallery ---------- */
+
+.gallery {
+  display: grid;
+  gap: 24px;
+  padding-block: 32px;
+}
+.gallery section {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(520px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+.gallery section > h1 {
+  grid-column: 1 / -1;
+  font-family: var(--display);
+  font-weight: 400;
+}
+.gallery-card {
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  color: var(--ink);
+}
+.gallery-card h2 {
+  font-size: 1.2rem;
+}
+.gallery-id {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+.gallery-options {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 0;
+  padding-left: 22px;
+}
+.gallery-options[data-pictures] {
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  list-style: none;
+}
+.gallery-options[data-pictures] li {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border-radius: 12px;
+  background: var(--night-lift);
+  color: var(--paper);
+  font-size: 0.85rem;
+}
+.gallery-options li[data-answer] {
+  font-weight: 800;
+  color: var(--mint-edge);
+}
+.gallery-options[data-pictures] li[data-answer] {
+  color: var(--ink);
+  background: var(--mint);
+}
+.gallery-why {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
 }

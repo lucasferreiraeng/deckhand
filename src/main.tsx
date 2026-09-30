@@ -4,6 +4,7 @@ import '@fontsource/dela-gothic-one/latin.css'
 import '@fontsource-variable/figtree'
 import '@fontsource-variable/jetbrains-mono'
 import './index.css'
+import './components/mock/mock.css'
 import App from './App.tsx'
 import { migrateBrowserProgress } from './progress.ts'
 

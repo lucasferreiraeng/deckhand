@@ -1,5 +1,6 @@
 // Sanity-checks every subject's cards. Run with `npm run check:content`.
 import { subjects } from '../src/subjects/index.ts'
+import type { Option } from '../src/types.ts'
 
 const ids = new Set<string>()
 let problems = 0
@@ -7,6 +8,7 @@ const problem = (msg: string) => {
   problems++
   console.log(`  ✗ ${msg}`)
 }
+const optionLabel = (o: Option) => (typeof o === 'string' ? o : o.label)
 const unbalancedBackticks = (text: string) => text.split('`').length % 2 === 0
 
 for (const s of subjects) {
@@ -17,10 +19,13 @@ for (const s of subjects) {
       ids.add(q.id)
       if (q.options.length < 3 || q.options.length > 4) problem(`${q.id}: has ${q.options.length} options, needs 3–4`)
       if (!(q.answer >= 0 && q.answer < q.options.length)) problem(`${q.id}: answer index ${q.answer} is out of range`)
-      if (new Set(q.options).size !== q.options.length) problem(`${q.id}: two options are identical`)
-      if (/all of the above|none of the above/i.test(q.options.join('|')))
+      const labels = q.options.map(optionLabel)
+      if (new Set(labels).size !== labels.length) problem(`${q.id}: two options are identical`)
+      if (/all of the above|none of the above/i.test(labels.join('|')))
         problem(`${q.id}: options are shuffled, so "all/none of the above" won't make sense`)
-      for (const text of [q.prompt, q.explanation, ...q.options])
+      if (q.options.some((o) => typeof o === 'string') && q.options.some((o) => typeof o !== 'string'))
+        problem(`${q.id}: mixes text and picture options`)
+      for (const text of [q.prompt, q.explanation, ...labels])
         if (unbalancedBackticks(text)) problem(`${q.id}: unbalanced backtick in "${text.slice(0, 40)}…"`)
     }
     console.log(`  ${l.name}: ${l.questions.length} questions`)

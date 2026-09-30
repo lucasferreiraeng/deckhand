@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Home } from './components/Home'
 import { Session } from './components/Session'
 import { TipsDeck } from './components/TipsDeck'
 import { useOffline } from './progress'
 import type { LevelId } from './types'
+
+const Gallery = import.meta.env.DEV ? lazy(() => import('./components/Gallery')) : null
+const showGallery = Gallery != null && new URLSearchParams(location.search).has('gallery')
 
 export type Route =
   | { name: 'home' }
@@ -19,6 +22,14 @@ export default function App() {
   }
   const home = () => go({ name: 'home' })
   const offline = useOffline()
+
+  if (showGallery && Gallery) {
+    return (
+      <Suspense>
+        <Gallery />
+      </Suspense>
+    )
+  }
 
   return (
     <>

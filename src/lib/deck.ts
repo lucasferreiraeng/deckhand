@@ -1,5 +1,5 @@
 import type { CardRow } from '../progress'
-import type { Question } from '../types'
+import type { Option, Question } from '../types'
 import { cardState, type CardState } from './stats'
 
 export const SESSION_SIZE = 10
@@ -26,7 +26,7 @@ export function pickQuestions(questions: Question[], cards: Map<string, CardRow>
 /** A question with its options in display order. */
 export interface Dealt {
   question: Question
-  options: string[]
+  options: Option[]
   answer: number
 }
 

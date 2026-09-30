@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties, type KeyboardEvent } from 'react'
 import type { Route } from '../App'
 import type { CardRow } from '../progress'
 import { isMuted, setMuted } from '../lib/sound'
@@ -12,6 +12,17 @@ import { TIP_KIND_LABEL } from './labels'
 export function Home({ go }: { go: (r: Route) => void }) {
   const overview = useOverview()
   const [muted, setMutedState] = useState(isMuted)
+  const [subjectId, setSubjectId] = useState(storedSubject)
+  const subject = subjects.find((s) => s.id === subjectId) ?? subjects[0]
+
+  const pickSubject = (id: string) => {
+    setSubjectId(id)
+    try {
+      localStorage.setItem(SUBJECT_KEY, id)
+    } catch {
+      // Storage can be blocked; the choice just won't survive a reload.
+    }
+  }
 
   const toggleSound = () => {
     setMuted(!muted)
@@ -52,11 +63,67 @@ export function Home({ go }: { go: (r: Route) => void }) {
         {overview && <Activity activity={overview.activity} />}
       </section>
 
-      {subjects.map((s) => (
-        <Shelf key={s.id} subject={s} go={go} />
-      ))}
-
+      <SubjectTabs current={subject.id} onPick={pickSubject} />
+      <Shelf key={subject.id} subject={subject} go={go} />
     </div>
+  )
+}
+
+const SUBJECT_KEY = 'deckhand:subject'
+
+function storedSubject() {
+  try {
+    return localStorage.getItem(SUBJECT_KEY) ?? subjects[0].id
+  } catch {
+    return subjects[0].id
+  }
+}
+
+function SubjectTabs({ current, onPick }: { current: string; onPick: (id: string) => void }) {
+  // Arrow keys move between tabs, as the ARIA tabs pattern expects.
+  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0
+    if (!step) return
+    e.preventDefault()
+    const i = subjects.findIndex((s) => s.id === current)
+    const next = subjects[(i + step + subjects.length) % subjects.length]
+    onPick(next.id)
+    document.getElementById(`tab-${next.id}`)?.focus()
+  }
+
+  return (
+    <div className="subject-tabs" role="tablist" aria-label="Subjects" onKeyDown={onKeyDown}>
+      {subjects.map((s) => (
+        <SubjectTab key={s.id} subject={s} selected={s.id === current} onPick={() => onPick(s.id)} />
+      ))}
+    </div>
+  )
+}
+
+function SubjectTab({ subject, selected, onPick }: { subject: Subject; selected: boolean; onPick: () => void }) {
+  const cards = useCards(subject.id) ?? new Map()
+  const questions = subject.levels.flatMap((l) => l.questions)
+  const { mastered } = countStates(questions, cards)
+  return (
+    <button
+      id={`tab-${subject.id}`}
+      className="subject-tab"
+      role="tab"
+      aria-selected={selected}
+      aria-controls="subject-panel"
+      tabIndex={selected ? 0 : -1}
+      onClick={onPick}
+    >
+      <span className="subject-badge" style={{ background: subject.color }} aria-hidden>
+        {subject.badge}
+      </span>
+      <span className="subject-tab-text">
+        <span className="subject-tab-name">{subject.name}</span>
+        <span className="subject-tab-meta">
+          {mastered} of {questions.length} mastered
+        </span>
+      </span>
+    </button>
   )
 }
 
@@ -98,15 +165,9 @@ function Shelf({ subject, go }: { subject: Subject; go: (r: Route) => void }) {
   const missed = subject.levels.flatMap((l) => l.questions).filter((q) => cardState(cards.get(q.id)) === 'missed').length
 
   return (
-    <section className="shelf" aria-labelledby={`shelf-${subject.id}`}>
+    <section className="shelf" id="subject-panel" role="tabpanel" aria-labelledby={`tab-${subject.id}`}>
       <div className="shelf-head">
-        <span className="subject-badge" style={{ background: subject.color }}>
-          {subject.badge}
-        </span>
-        <div className="shelf-title">
-          <h2 id={`shelf-${subject.id}`}>{subject.name}</h2>
-          <p>{subject.tagline}</p>
-        </div>
+        <p className="shelf-tagline">{subject.tagline}</p>
         {missed > 0 && (
           <button className="btn btn-flame btn-sm" onClick={() => go({ name: 'session', subjectId: subject.id, levelId: 'review' })}>
             Review {missed} missed
